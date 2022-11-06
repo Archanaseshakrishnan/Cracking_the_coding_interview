@@ -1,0 +1,13 @@
+def isUniqueChars(input):
+    checker = 0
+    for i in input:
+        val = ord(i) - ord('a')
+        if (checker & (1 << val)) > 0:
+            return False
+        checker |= (1 << val)
+    return True
+    
+print(isUniqueChars("aa"))
+print(isUniqueChars(""))
+print(isUniqueChars("a"))
+print(isUniqueChars("hgfqwerg"))
