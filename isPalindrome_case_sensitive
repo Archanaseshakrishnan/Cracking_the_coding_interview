@@ -1,0 +1,27 @@
+def isPalindrome(input_string):
+    input_string = input_string.lower()
+    print(CreateBitVector(input_string))
+    
+def CreateBitVector(input_string):
+    value = 0
+    length = 0
+    for i in input_string:
+        int_value = ord(i) - ord('a')
+        mask = 1 << int_value
+        if (value & mask) == 0:
+            value |= mask
+        else:
+            value &= ~mask
+        length += 1
+    
+    if length % 2 == 0:
+        return value == 0
+    else:
+        return (value & (value - 1)) == 0
+        
+isPalindrome("malayalam")
+isPalindrome("Madam")
+isPalindrome("aaaxca")
+isPalindrome("abxa")
+isPalindrome("")
+isPalindrome("a")
