@@ -1,0 +1,141 @@
+class Solution(object):
+    
+    def find_connected_nodes(self, node_, key, node_maps):
+        stack_track = []
+        connected_nodes = node_maps[key]
+        stack_track.extend(connected_nodes)
+        visited = set()
+        found = False
+        
+        while len(stack_track) != 0:  
+            this_val = stack_track.pop(0)
+            if this_val in visited:
+                continue
+            elif this_val == node_:
+                found = True
+                break
+            connodes = node_maps[this_val]
+            for connode in connodes:
+                if connodes not in visited:
+                    stack_track.append(connode)
+            visited.add(this_val)
+        #print(key,node_,connected_nodes,found)
+        return found
+    
+    def analyse_edges(self, maxlen, result, len_map, node_maps, unique_res):
+        edge_uniq = set()
+        #print(node_maps)
+        for i in range(maxlen,0,-1):
+            if i not in len_map:
+                continue
+            key_list = len_map[i]
+            for key in key_list:
+                nodes_connected = set()
+                nodes_connected.update(node_maps[key])
+                
+                #key , each of the connected nodes
+                for node_ in nodes_connected:
+                    # check if node_ can be discovered without node_maps[node_] without key
+                    # and without node_maps[key] without node_
+                    #print(key,node_)
+                    check_word = ""
+                    if key < node_:
+                        check_word = str(key)+"_"+str(node_)
+                    else:
+                        check_word = str(node_)+"_"+str(key)
+                    if check_word in edge_uniq:
+                        continue
+                    else:
+                        edge_uniq.add(check_word)
+                    key_map_set = node_maps[key]
+                    key_map_set.remove(node_)
+                    node_map_set = node_maps[node_]
+                    node_map_set.remove(key)
+                    node_maps[key] = key_map_set
+                    node_maps[node_] = node_map_set
+                    
+                    found = self.find_connected_nodes(node_, key, node_maps)
+                    if found:
+                        key_map_set.add(node_)
+                        node_maps[key] = key_map_set
+                        node_map_set.add(key)
+                        node_maps[node_] = node_map_set
+                    else:
+                        templist = []
+                        if key < node_:
+                            templist.append(key)
+                            templist.append(node_)
+                        else:
+                            templist.append(node_)
+                            templist.append(key)
+                        word = str(templist)
+                        if word not in unique_res:
+                            result.append(templist)
+                            unique_res.add(word)
+            
+    def criticalConnections(self, n, connections):
+        node_maps = dict()
+        len_map = dict()
+        result = []
+        unique_res = set()
+        
+        for connection in connections:
+            node1 = connection[0]
+            node2 = connection[1]
+            temp_set = set()
+            if node1 not in node_maps:
+                temp_set.add(node2)
+                node_maps[node1] = temp_set
+            else:
+                temp_set = node_maps[node1]
+                temp_set.add(node2)
+                node_maps[node1] = temp_set
+                
+            temp_set = set()
+            if node2 not in node_maps:
+                temp_set.add(node1)
+                node_maps[node2] = temp_set
+            else:
+                temp_set = node_maps[node2]
+                temp_set.add(node1)
+                node_maps[node2] = temp_set
+        
+        
+        maxlen = 0
+        found_n_minus_1 = 0
+        for k,v in node_maps.items():
+            nodelist_len = len(v)
+            templist = []
+            if nodelist_len == 1:
+                val = v.pop()
+                if k < val:
+                    templist.append(k)
+                    templist.append(val)
+                else:
+                    templist.append(val)
+                    templist.append(k)
+                word = str(templist)
+                if word not in unique_res:
+                    result.append(templist)
+                    unique_res.add(word)
+            elif nodelist_len == n-1:
+                found_n_minus_1 = 1
+            else:
+                temp_list = []
+                if nodelist_len in len_map:
+                    temp_list = len_map[nodelist_len]
+                temp_list.append(k)
+                len_map[nodelist_len] = temp_list
+                if nodelist_len > maxlen:
+                    maxlen = nodelist_len
+                
+        if len(result) > 0:
+            return list(result)
+        elif found_n_minus_1:
+            return []
+        else:
+            self.analyse_edges(maxlen, result, len_map, node_maps, unique_res)
+            return result   
+
+        
+                
