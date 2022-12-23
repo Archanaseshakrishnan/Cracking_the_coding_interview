@@ -1,0 +1,48 @@
+class Solution {
+    int global_max_profit;
+
+    enum Decision{
+        BUY,
+        SELL,
+        SKIP
+    };
+
+public:
+
+    Solution(){
+        global_max_profit = 0;
+    }
+
+    int get_GlobalMaxProfit(){
+        return global_max_profit;
+    }
+
+    int maxProfit(vector<int>& prices) {
+        //Solution::Decision 
+        maxProfitHelper(prices, 0, 0, SKIP, prices.size());
+        return Solution::get_GlobalMaxProfit();
+    }
+
+    int maxProfitHelper(vector<int>& prices, int cur_ind, int profit_so_far, Solution::Decision prev_decision, int vec_len) {
+        if(profit_so_far > global_max_profit){
+            global_max_profit = profit_so_far;
+        }
+        int trial1 = profit_so_far;
+        if(cur_ind >= 0 && cur_ind < vec_len){
+            if(prev_decision == SKIP){
+                if(prev_decision == SKIP){
+                    assert(cur_ind == 0);
+                    trial1 = std::max(maxProfitHelper(prices, cur_ind+1, profit_so_far, SELL, vec_len), maxProfitHelper(prices, cur_ind+1, profit_so_far-prices[cur_ind], BUY, vec_len));
+                }
+            } else if(prev_decision == BUY){
+                //check if max_profit can be got by skipping this index / by selling at cur_index
+                trial1 = std::max(maxProfitHelper(prices, cur_ind+1, profit_so_far, prev_decision, vec_len), maxProfitHelper(prices, cur_ind+2, profit_so_far+prices[cur_ind], SELL, vec_len));
+            } else if(prev_decision == SELL){
+                //check if max_profit can be got by skipping this index / by buying at cur_index
+                //Note: if it is selling here it most likely means it would have skipped the index before making any decsion on it
+                trial1 = std::max(maxProfitHelper(prices, cur_ind+1, profit_so_far, prev_decision, vec_len), maxProfitHelper(prices, cur_ind+1, profit_so_far-prices[cur_ind], BUY, vec_len));
+            }
+        }
+        return trial1;
+    }
+};
