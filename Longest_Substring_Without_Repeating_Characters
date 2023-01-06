@@ -1,0 +1,26 @@
+class Solution(object):
+    def lengthOfLongestSubstring(self, s):
+        """
+        :type s: str
+        :rtype: int
+        """
+        if len(s) <= 1:
+            return len(s)
+        
+        letters_dict = dict()
+        first_ptr = 0
+        max_len = 0
+               
+        for last_ptr in range(0, len(s)):
+            
+            if s[last_ptr] not in letters_dict:
+                letters_dict[s[last_ptr]] = last_ptr
+            else:
+                next_pos = letters_dict[s[last_ptr]]
+                if next_pos+1 >= first_ptr:
+                    first_ptr = next_pos+1
+                letters_dict[s[last_ptr]] = last_ptr
+            if last_ptr - first_ptr + 1 > max_len:
+                    max_len = last_ptr - first_ptr + 1
+            #print(first_ptr, last_ptr)
+        return max_len
