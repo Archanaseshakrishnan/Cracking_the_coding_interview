@@ -7,6 +7,13 @@ class PatternNodes:
     def is_str_regex(self):
         return self.is_regex
 
+"""
+"aasdf.*asdf.*asdf.*asdf.*s", "aasdfasdfasdfasdfas"
+"abcdede", "ab.*de"
+"aaca", "ab*a*c*a"
+"aaa", "a*a"
+"mississippi", "mis*is*ip*."
+"""
 class Solution(object):
 
     def generate_pattern_nodes(self, p):
