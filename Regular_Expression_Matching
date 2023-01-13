@@ -49,10 +49,14 @@ class Solution(object):
             pattern_node_list.append(PatternNodes(word_so_far, False)) 
         return pattern_node_list
 
-    
+    def print_pattern_nodes(self, pattern_node_list):
+        for pattern_node in pattern_node_list:
+            print(pattern_node.get_str_value(), pattern_node.is_str_regex())
+
     def exact_compare(self, s, s_index, exact_pattern, s_len):
         exact_pattern_index = 0
         exact_pattern_len = len(exact_pattern)
+        print(exact_pattern, s[s_index:s_len])
         while s_index < s_len and exact_pattern_index < exact_pattern_len:
             if exact_pattern[exact_pattern_index] == '.' or s[s_index] == exact_pattern[exact_pattern_index]:
                 s_index += 1
@@ -62,16 +66,6 @@ class Solution(object):
         if exact_pattern_index < exact_pattern_len:
             return -1
 
-        return s_index
-
-    def dp_compare(self, s, s_index, s_len, pattern_node_list, variable_pattern):
-        # TODO:
-        # Check if there is a prefix match with pattern and exact match
-        # If not 
-        # easy -> go through optional match function and see if there is a match
-        # If so,
-        # too many conditions to check
-        # DP to find the matches and see where to block
         return s_index
 
     def variable_match_check(self, variable_pattern, s, s_index, s_len):
@@ -87,7 +81,63 @@ class Solution(object):
                     s_ptr += 1
                 if s_ptr < s_len: 
                     var_ptr += 1
-            return s_ptr         
+            print(s_ptr)
+            return s_ptr  
+
+    def find_prefix_match(self, variable_pattern, exact_pattern):
+        exact_p_index = self.variable_match_check(variable_pattern, exact_pattern, 0, len(exact_pattern))
+        return exact_p_index
+    
+    def find_the_first_non_matching_char(self, s, s_index, s_len, variable_pattern, exact_pattern):
+        cur_s_index = s_index
+        
+        # Min or no overlap between exact_pattern and variable pattern
+        # So just go ahead and find the exact_pattern within the input string starting
+        # at index s_index
+        # If there is a gap between the exact match pattern starting and the input s_index
+        # see if it os accounted by the variable_pattern
+        # If not return -1 
+        while cur_s_index < s_len:
+            temp = self.exact_compare(s, cur_s_index, exact_pattern, s_len)
+            print(temp)
+            if temp == -1:
+                #no match is found just increment index and search
+                cur_s_index += 1
+            else:
+                #match is found, but check if there is some matching to be found between temp - cur_s_index 
+                print(s_index, cur_s_index)
+                if temp - cur_s_index < temp - s_index:
+                    temp_var = self.variable_match_check(variable_pattern, s, s_index, cur_s_index)
+                    print(temp_var, (cur_s_index-s_index))
+                    if temp_var < cur_s_index - s_index:
+                        return -1
+                return temp
+        
+        return -1
+
+    def dp_compare(self, s, s_index, s_len, pattern_node_list, pattern_node_index, variable_pattern):
+        # TODO:
+        # Check if there is a prefix match with pattern and exact match
+        # If not 
+        # easy -> go through optional match function and see if there is a match
+        # If so,
+        # too many conditions to check
+        # DP to find the matches and see where to block
+        exact_pattern = pattern_node_list[pattern_node_index].get_str_value()
+        prefix_match_len = self.find_prefix_match(variable_pattern, exact_pattern)
+        print("prefix_match_len", prefix_match_len)
+        print("exact_pattern", exact_pattern)
+        print("Input:", s[s_index:s_len])
+        if prefix_match_len < len(exact_pattern):
+            index = self.find_the_first_non_matching_char(s, s_index, s_len, variable_pattern, exact_pattern)
+            if index == -1:
+                return -1
+            else:
+                return index
+        #else:
+        #the whole exact_pattern matches and it's a problem
+
+        return s_index       
 
     def isMatch(self, s, p):
         """
@@ -96,7 +146,8 @@ class Solution(object):
         :rtype: bool
         """
         pattern_node_list = self.generate_pattern_nodes(p)
-        
+        self.print_pattern_nodes(pattern_node_list)
+
         s_index = 0
         s_len = len(s)
         variable_pattern = ""
@@ -112,16 +163,16 @@ class Solution(object):
             elif pattern_node.is_regex == False:
                 #We have variable_pattern, this is the first exact match after accruding some variable match so far
                 # We have to place DP solution here because we may never know the boundary of the variable match
-                s_index = self.dp_compare(s, s_index, s_len, pattern_node_list, variable_pattern, pattern_index)
-                if s_index == s_len:
-                    return True
-                elif s_index == -1:
+                s_index = self.dp_compare(s, s_index, s_len, pattern_node_list, pattern_index, variable_pattern)
+                variable_pattern = ""
+                if s_index == -1:
                     return False
             else:
                 # Proceed till you find the first exact match
                 variable_pattern += pattern_node.get_str_value()
             pattern_index += 1
 
+        print(s_index)
         #There are some variable / optional matches remaining
         if variable_pattern != "" and s_index < s_len and s_index != -1:
             s_index = self.variable_match_check(variable_pattern, s, s_index, s_len)
