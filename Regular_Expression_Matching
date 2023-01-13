@@ -113,7 +113,6 @@ class Solution(object):
 
     def find_all_matching_char(self, s, s_index, s_len, variable_pattern, exact_pattern):
         cur_s_index = self.variable_match_check(variable_pattern, s, s_index, s_len)
-        print(s_len, cur_s_index)
         # cur_s_index would contain all the matching chars in variable pattern
         if cur_s_index == -1 or cur_s_index == s_index:
             # it means that if the super-set search fails due to the absence of any related character return -1
@@ -148,7 +147,7 @@ class Solution(object):
         exact_pattern = pattern_node_list[pattern_node_index].get_str_value()
         prefix_match_len = self.find_prefix_match(variable_pattern, exact_pattern)
         
-        if prefix_match_len < len(exact_pattern):
+        if prefix_match_len < len(exact_pattern) or variable_pattern == ".":
             index = self.find_first_non_matching_char(s, s_index, s_len, variable_pattern, exact_pattern)
             if index == -1:
                 return -1
@@ -156,7 +155,6 @@ class Solution(object):
                 return index
         else:
             #the whole exact_pattern matches and it's a problem
-            print(s, variable_pattern, exact_pattern)
             index = self.find_all_matching_char(s, s_index, s_len, variable_pattern, exact_pattern)
             if index == -1:
                 return -1
