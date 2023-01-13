@@ -77,7 +77,7 @@ class Solution(object):
             s_ptr = s_index
             var_ptr = 0
             while s_ptr < s_len and var_ptr < var_len: 
-                while var_ptr < var_len and s_ptr < s_len and s[s_ptr] == variable_pattern[var_ptr]:
+                while var_ptr < var_len and s_ptr < s_len and (s[s_ptr] == variable_pattern[var_ptr] or s[s_ptr] == "." or variable_pattern[var_ptr] == "."):
                     s_ptr += 1
                 if s_ptr < s_len: 
                     var_ptr += 1
@@ -88,9 +88,8 @@ class Solution(object):
         exact_p_index = self.variable_match_check(variable_pattern, exact_pattern, 0, len(exact_pattern))
         return exact_p_index
     
-    def find_the_first_non_matching_char(self, s, s_index, s_len, variable_pattern, exact_pattern):
-        cur_s_index = s_index
-        
+    def find_first_non_matching_char(self, s, s_index, s_len, variable_pattern, exact_pattern):
+        cur_s_index = s_index 
         # Min or no overlap between exact_pattern and variable pattern
         # So just go ahead and find the exact_pattern within the input string starting
         # at index s_index
@@ -112,6 +111,32 @@ class Solution(object):
         
         return -1
 
+    def find_all_matching_char(self, s, s_index, s_len, variable_pattern, exact_pattern):
+        cur_s_index = self.variable_match_check(variable_pattern, s, s_index, s_len)
+        print(s_len, cur_s_index)
+        # cur_s_index would contain all the matching chars in variable pattern
+        if cur_s_index == -1 or cur_s_index == s_index:
+            # it means that if the super-set search fails due to the absence of any related character return -1
+            return -1
+        else:
+            exact_pattern_len = len(exact_pattern)
+            if exact_pattern_len == 1:
+                if cur_s_index == s_len:
+                    new_cur_s_index = cur_s_index - 1
+                else:
+                    new_cur_s_index = cur_s_index
+            else:
+                new_cur_s_index = cur_s_index - exact_pattern_len
+            if new_cur_s_index < 0 or new_cur_s_index < s_index: 
+                return -1
+            else:
+                exact_match = self.exact_compare(s, new_cur_s_index, exact_pattern, s_len)
+                if exact_match == -1:
+                    return -1 
+                else:
+                    return exact_match
+
+
     def dp_compare(self, s, s_index, s_len, pattern_node_list, pattern_node_index, variable_pattern):
         # TODO:
         # Check if there is a prefix match with pattern and exact match
@@ -122,19 +147,21 @@ class Solution(object):
         # DP to find the matches and see where to block
         exact_pattern = pattern_node_list[pattern_node_index].get_str_value()
         prefix_match_len = self.find_prefix_match(variable_pattern, exact_pattern)
-        print("prefix_match_len", prefix_match_len)
-        print("exact_pattern", exact_pattern)
-        print("Input:", s[s_index:s_len])
+        
         if prefix_match_len < len(exact_pattern):
-            index = self.find_the_first_non_matching_char(s, s_index, s_len, variable_pattern, exact_pattern)
+            index = self.find_first_non_matching_char(s, s_index, s_len, variable_pattern, exact_pattern)
             if index == -1:
                 return -1
             else:
                 return index
-        #else:
-        #the whole exact_pattern matches and it's a problem
-
-        return s_index       
+        else:
+            #the whole exact_pattern matches and it's a problem
+            print(s, variable_pattern, exact_pattern)
+            index = self.find_all_matching_char(s, s_index, s_len, variable_pattern, exact_pattern)
+            if index == -1:
+                return -1
+            else:
+                return index     
 
     def isMatch(self, s, p):
         """
@@ -153,9 +180,7 @@ class Solution(object):
         for pattern_node in pattern_node_list:
             if variable_pattern == "" and pattern_node.is_regex == False:
                 s_index = self.exact_compare(s, s_index, pattern_node.get_str_value(), s_len)
-                if s_index == s_len:
-                    return True
-                elif s_index == -1:
+                if s_index == -1:
                     return False
                 variable_pattern = ""
             elif pattern_node.is_regex == False:
