@@ -15,7 +15,6 @@ class Solution(object):
         pattern_node_list = []
         i = 0
         while i < p_len:
-            #print(i, p[i])
             if p[i] == '*':
                 last_letter = word_so_far[-1]
                 word_so_far = word_so_far[:-1]
@@ -41,6 +40,7 @@ class Solution(object):
                 else: #there is no i+1
                     word_so_far += '.'
                     pattern_node_list.append(PatternNodes(word_so_far, False))
+                    word_so_far = ""
             else:
                 word_so_far += p[i]
             i += 1
@@ -56,7 +56,7 @@ class Solution(object):
     def exact_compare(self, s, s_index, exact_pattern, s_len):
         exact_pattern_index = 0
         exact_pattern_len = len(exact_pattern)
-        print(exact_pattern, s[s_index:s_len])
+        
         while s_index < s_len and exact_pattern_index < exact_pattern_len:
             if exact_pattern[exact_pattern_index] == '.' or s[s_index] == exact_pattern[exact_pattern_index]:
                 s_index += 1
@@ -81,7 +81,7 @@ class Solution(object):
                     s_ptr += 1
                 if s_ptr < s_len: 
                     var_ptr += 1
-            print(s_ptr)
+            
             return s_ptr  
 
     def find_prefix_match(self, variable_pattern, exact_pattern):
@@ -99,16 +99,13 @@ class Solution(object):
         # If not return -1 
         while cur_s_index < s_len:
             temp = self.exact_compare(s, cur_s_index, exact_pattern, s_len)
-            print(temp)
             if temp == -1:
                 #no match is found just increment index and search
                 cur_s_index += 1
             else:
                 #match is found, but check if there is some matching to be found between temp - cur_s_index 
-                print(s_index, cur_s_index)
                 if temp - cur_s_index < temp - s_index:
                     temp_var = self.variable_match_check(variable_pattern, s, s_index, cur_s_index)
-                    print(temp_var, (cur_s_index-s_index))
                     if temp_var < cur_s_index - s_index:
                         return -1
                 return temp
@@ -160,6 +157,7 @@ class Solution(object):
                     return True
                 elif s_index == -1:
                     return False
+                variable_pattern = ""
             elif pattern_node.is_regex == False:
                 #We have variable_pattern, this is the first exact match after accruding some variable match so far
                 # We have to place DP solution here because we may never know the boundary of the variable match
@@ -172,7 +170,6 @@ class Solution(object):
                 variable_pattern += pattern_node.get_str_value()
             pattern_index += 1
 
-        print(s_index)
         #There are some variable / optional matches remaining
         if variable_pattern != "" and s_index < s_len and s_index != -1:
             s_index = self.variable_match_check(variable_pattern, s, s_index, s_len)
